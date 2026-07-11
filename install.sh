@@ -241,23 +241,74 @@ EOF
 }
 
 # ── download helper ────────────────────────────────────────
-download() { # $1=asset $2=output
-  local asset="$1" out="$2" url
+asset_url() { # $1=asset → release asset URL on stdout
   # GitHub asset URL shapes differ: latest/download/<asset> vs download/<tag>/<asset>
   if [[ "$VERSION" == "latest" ]]; then
-    url="https://github.com/$REPO/releases/latest/download/$asset"
+    echo "https://github.com/$REPO/releases/latest/download/$1"
   else
-    url="https://github.com/$REPO/releases/download/$VERSION/$asset"
+    echo "https://github.com/$REPO/releases/download/$VERSION/$1"
   fi
-  # silent download: --progress-bar redraws over itself on the release-asset
-  # 302 redirect (two responses, one line) and smears garbage on some terminals;
-  # the ▶ line above is the user feedback. -sS still surfaces real errors.
+}
+
+download() { # $1=asset $2=output
+  local asset="$1" out="$2" url
+  url=$(asset_url "$asset")
+  # curl's built-in --progress-bar flashes an indeterminate "#=O=#" animation
+  # while it waits for redirect hops / response headers — looks broken. So:
+  # resolve the redirect chain with a body-less HEAD to learn the final URL +
+  # size, download silently, and draw ONE clean bar from the file's growth.
+  local total="" final="" resp=""
   if command -v curl >/dev/null 2>&1; then
-    curl -fsSL -o "$out" "$url"
+    # headers of every hop print to stdout (-I), final URL appended by -w;
+    # the LAST Content-Length on the wire is the real asset's size.
+    resp=$(curl -fsSIL -w '\n%{url_effective}' "$url" 2>/dev/null) || resp=""
+    if [ -n "$resp" ]; then
+      final=$(printf '%s\n' "$resp" | tail -1)
+      total=$(printf '%s\n' "$resp" | tr -d '\r' | awk 'tolower($1)=="content-length:"{v=$2} END{print v}')
+      case "$total" in ''|*[!0-9]*) total="";; esac
+    fi
+  fi
+  [ -n "$final" ] || final="$url"
+  if [ -n "$total" ] && [ "$total" -gt 0 ] && [ -t 2 ]; then
+    fetch_quiet "$final" "$out" &
+    local pid=$!
+    trap 'kill "$pid" 2>/dev/null; exit 130' INT TERM
+    local width=40 size pct filled bar rc=0
+    while kill -0 "$pid" 2>/dev/null; do
+      size=$(stat -f%z "$out" 2>/dev/null || stat -c%s "$out" 2>/dev/null || echo 0)
+      pct=$(( size * 100 / total )); [ "$pct" -gt 100 ] && pct=100
+      filled=$(( pct * width / 100 ))
+      bar=$(printf '%*s' "$filled" '' | tr ' ' '#')
+      printf '\r  %-*s %3d%%' "$width" "$bar" "$pct" >&2
+      sleep 0.2
+    done
+    wait "$pid" || rc=$?
+    trap - INT TERM
+    if [ "$rc" -ne 0 ]; then printf '\n' >&2; return "$rc"; fi
+    bar=$(printf '%*s' "$width" '' | tr ' ' '#')
+    printf '\r  %s 100%%\n' "$bar" >&2
+  else
+    fetch_quiet "$final" "$out"
+  fi
+}
+
+fetch_quiet() { # $1=url $2=out — plain fetch, errors still reported
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL -o "$2" "$1"
   elif command -v wget >/dev/null 2>&1; then
-    wget -q -O "$out" "$url"
+    wget -q -O "$2" "$1"
   else
     red "need curl or wget to download"; exit 1
+  fi
+}
+
+sha256_of() { # $1=file → lowercase hex on stdout
+  if command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$1" | awk '{print $1}'
+  elif command -v openssl >/dev/null 2>&1; then
+    openssl dgst -sha256 "$1" | awk '{print $NF}'
+  else
+    red "need shasum or openssl to verify the download"; exit 1
   fi
 }
 
@@ -309,6 +360,19 @@ trap 'rm -rf "$tmp"' EXIT
 
 cyan "▶ downloading wander ($TARGET)…"
 download "wander-$TARGET.tar.gz" "$tmp/wander.tar.gz"
+# verify against the release checksum list before touching anything (same
+# gate `wander upgrade` applies) — a tampered / truncated download stops here.
+fetch_quiet "$(asset_url SHA256SUMS.txt)" "$tmp/SHA256SUMS.txt"
+expected=$(awk -v f="wander-$TARGET.tar.gz" '$2==f{print $1}' "$tmp/SHA256SUMS.txt")
+if [ -z "$expected" ]; then red "wander-$TARGET.tar.gz missing from SHA256SUMS.txt"; exit 1; fi
+actual=$(sha256_of "$tmp/wander.tar.gz")
+if [ "$expected" != "$actual" ]; then
+  red "checksum mismatch for wander-$TARGET.tar.gz"
+  red "  expected $expected"
+  red "  got      $actual"
+  exit 1
+fi
+green "✓ checksum verified"
 tar -xzf "$tmp/wander.tar.gz" -C "$tmp"
 mv "$tmp/wander" "$BIN_DIR/wander"
 chmod +x "$BIN_DIR/wander"

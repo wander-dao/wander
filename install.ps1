@@ -44,6 +44,38 @@ function Say-Red($m)   { Write-Host $m -ForegroundColor Red }
 function Say-Gray($m)  { Write-Host $m -ForegroundColor DarkGray }
 function Die($m) { Say-Red "x $m"; exit 1 }
 
+# Stream-copy download with a single clean console progress bar. Avoids both
+# Invoke-WebRequest's PS 5.1 progress slowdown and redirect-hop bar flicker;
+# the bar only draws once the sized response body is flowing.
+function Download-WithBar([string]$Url, [string]$Out) {
+  $req = [Net.HttpWebRequest]::Create($Url)
+  $req.AllowAutoRedirect = $true
+  $req.UserAgent = 'wander-install'
+  $resp = $req.GetResponse()
+  try {
+    $total = $resp.ContentLength
+    $in = $resp.GetResponseStream()
+    $fs = [IO.File]::Create($Out)
+    try {
+      $buf = New-Object byte[] 65536
+      $done = 0; $width = 40; $lastPct = -1
+      while (($n = $in.Read($buf, 0, $buf.Length)) -gt 0) {
+        $fs.Write($buf, 0, $n); $done += $n
+        if ($total -gt 0) {
+          $pct = [int][math]::Floor(100 * $done / $total)
+          if ($pct -ne $lastPct) {
+            $lastPct = $pct
+            $filled = [int]($pct * $width / 100)
+            $bar = ('#' * $filled).PadRight($width)
+            Write-Host -NoNewline ("`r  $bar {0,3}%" -f $pct)
+          }
+        }
+      }
+      if ($total -gt 0) { Write-Host "" }
+    } finally { $fs.Dispose(); $in.Dispose() }
+  } finally { $resp.Dispose() }
+}
+
 function Read-SettingsObject {
   if (-not (Test-Path $Settings)) { return $null }
   $raw = [IO.File]::ReadAllText($Settings)
@@ -123,9 +155,26 @@ try {
     else                       { $url = "https://github.com/$Repo/releases/download/$Version/$asset" }
     Say-Cyan "> downloading wander ($Version)..."
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+    Download-WithBar $url $zip
+
+    # verify against the release checksum list before touching anything (same
+    # gate `wander upgrade` applies). -ZipPath skips this: offline installs
+    # have no trusted SHA256SUMS.txt to compare against.
+    if ($Version -eq 'latest') { $sumsUrl = "https://github.com/$Repo/releases/latest/download/SHA256SUMS.txt" }
+    else                       { $sumsUrl = "https://github.com/$Repo/releases/download/$Version/SHA256SUMS.txt" }
+    $sums = Join-Path $tmp 'SHA256SUMS.txt'
     $pp = $ProgressPreference; $ProgressPreference = 'SilentlyContinue'
-    try { Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $zip }
+    try { Invoke-WebRequest -UseBasicParsing -Uri $sumsUrl -OutFile $sums }
     finally { $ProgressPreference = $pp }
+    $expected = $null
+    foreach ($line in Get-Content $sums) {
+      $parts = ($line.Trim()) -split '\s+'
+      if ($parts.Length -ge 2 -and $parts[1] -eq $asset) { $expected = $parts[0].ToLowerInvariant(); break }
+    }
+    if (-not $expected) { Die "$asset missing from SHA256SUMS.txt" }
+    $actual = (Get-FileHash -Algorithm SHA256 -Path $zip).Hash.ToLowerInvariant()
+    if ($actual -ne $expected) { Die "checksum mismatch for $asset (expected $expected, got $actual)" }
+    Say-Green "checksum verified"
   }
 
   Unblock-File $zip -ErrorAction SilentlyContinue
