@@ -136,8 +136,9 @@ patch_settings() {
     return 1
   fi
 
-  local existing
+  local existing interval
   existing="$(json_get "$SETTINGS" '.statusLine.command')"
+  interval="$(json_get "$SETTINGS" '.statusLine.refreshInterval')"
   if [[ -n "$existing" && "$existing" != "$STATUSLINE_CMD" ]]; then
     red "⚠  settings.json already has a statusLine.command:"
     red "    $existing"
@@ -148,24 +149,25 @@ patch_settings() {
       gray "skipped settings.json patch"
       return
     fi
-  elif [[ "$existing" == "$STATUSLINE_CMD" ]]; then
+  elif [[ "$existing" == "$STATUSLINE_CMD" && "$interval" == "5000" ]]; then
     gray "settings.json already wired to wander statusline (no change)"
     return
   fi
+  # command matches but refreshInterval missing/old → silent upgrade of our own block
 
   local backup tmp="${SETTINGS}.tmp"
   backup="$(backup_settings)" || true
 
   if have_jq; then
     jq --arg cmd "$STATUSLINE_CMD" \
-       '.statusLine = {type:"command", command:$cmd}' \
+       '.statusLine = {type:"command", command:$cmd, refreshInterval:5000}' \
        "$SETTINGS" > "$tmp"
   else
     python3 - "$SETTINGS" "$STATUSLINE_CMD" > "$tmp" <<'PY'
 import json, sys
 file, cmd = sys.argv[1], sys.argv[2]
 d = json.load(open(file))
-d["statusLine"] = {"type": "command", "command": cmd}
+d["statusLine"] = {"type": "command", "command": cmd, "refreshInterval": 5000}
 print(json.dumps(d, indent=2, ensure_ascii=False))
 PY
   fi

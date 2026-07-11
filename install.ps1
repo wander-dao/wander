@@ -222,7 +222,11 @@ if (-not $NoStatusline) {
   if ($null -eq $obj) { $obj = [pscustomobject]@{} ; Say-Gray "created $Settings" }
   $existing = $null
   if ($obj.PSObject.Properties['statusLine']) { $existing = $obj.statusLine.command }
-  if ($existing -eq $StatuslineCmd) {
+  $existingInterval = $null
+  if ($obj.PSObject.Properties['statusLine'] -and $obj.statusLine.PSObject.Properties['refreshInterval']) {
+    $existingInterval = $obj.statusLine.refreshInterval
+  }
+  if ($existing -eq $StatuslineCmd -and $existingInterval -eq 5000) {
     Say-Gray "settings.json already wired to wander statusline (no change)"
   } else {
     $go = $true
@@ -236,7 +240,7 @@ if (-not $NoStatusline) {
       if ($ans -notin @('y', 'Y')) { Say-Gray "skipped settings.json patch"; $go = $false }
     }
     if ($go) {
-      $sl = [pscustomobject]@{ type = 'command'; command = $StatuslineCmd }
+      $sl = [pscustomobject]@{ type = 'command'; command = $StatuslineCmd; refreshInterval = 5000 }
       if ($obj.PSObject.Properties['statusLine']) { $obj.statusLine = $sl }
       else { $obj | Add-Member -NotePropertyName statusLine -NotePropertyValue $sl }
       Write-SettingsObject $obj
