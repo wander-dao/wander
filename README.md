@@ -22,8 +22,8 @@
 curl -fsSL https://raw.githubusercontent.com/wander-dao/wander/main/install.sh | bash
 ```
 
-裝完跑一次 `wander stats` 建立修行紀錄;打開 Claude Code,status bar 即顯示你的修行狀態(境界 / 氣海 / 靈石 / 靈力 / 洞府)。
-**只想被動看?偶爾跑一下 `wander stats` 讓數字追上,其餘交給 status bar。**
+打開 Claude Code,status bar 即自動建立修行紀錄並顯示你的修行狀態(境界 / 氣海 / 靈石 / 靈力 / 洞府)——首次顯示【未入門】,片刻自亮,之後亦會自行保持最新。
+**`wander stats` 等指令是深潛用的全景視圖,status bar 不依賴它。**
 
 <details>
 <summary>其他安裝方式:保留自己的 statusline / Windows / 疑難排解</summary>
@@ -147,8 +147,8 @@ curl -fsSL https://raw.githubusercontent.com/wander-dao/wander/main/install.sh |
 curl -fsSL https://raw.githubusercontent.com/wander-dao/wander/main/install.sh | bash
 ```
 
-Run `wander stats` once to build your record; open Claude Code and the status bar shows your cultivation state (realm / Qi Sea / stones / mana / project).
-**Prefer to just watch? Run `wander stats` now and then to catch the numbers up — the status bar does the rest.**
+Open Claude Code and the status bar builds your record on its own and shows your cultivation state (realm / Qi Sea / stones / mana / project) — a brief 【未入門】 first, then it lights up and keeps itself current.
+**Commands like `wander stats` are the deep-dive views; the status bar does not depend on them.**
 
 <details>
 <summary>Other install paths: keep your own statusline / Windows / troubleshooting</summary>

@@ -18,7 +18,7 @@
 | 靈力 X% | 5-hour quota left; ⚠ / ✕ with recovery time when low |
 | 洞府 ~$X | Where you stand, and its lifetime Kindling (approximate) |
 
-First use shows 【未入門】 — run `wander stats` once and the record begins.
+First use shows 【未入門】 for a moment, then it lights up on its own — the record builds itself. The lit line appears on your next interaction (Claude Code redraws the status bar on activity, not while idle).
 
 The statusline is a **pure cache reader — it never scans, never writes**. Any command keeps it fresh. Projection is idempotent; leave it on without a thought.
 
