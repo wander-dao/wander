@@ -273,23 +273,33 @@ download() { # $1=asset $2=output
     fetch_quiet "$final" "$out" &
     local pid=$!
     trap 'kill "$pid" 2>/dev/null; exit 130' INT TERM
-    local width=40 size pct filled bar rc=0
+    local width=40 size pct filled bar rc=0 iter=0 speed=""
+    local total_mb; total_mb=$(fmt_mb "$total")
     while kill -0 "$pid" 2>/dev/null; do
+      iter=$(( iter + 1 ))
       size=$(stat -f%z "$out" 2>/dev/null || stat -c%s "$out" 2>/dev/null || echo 0)
       pct=$(( size * 100 / total )); [ "$pct" -gt 100 ] && pct=100
       filled=$(( pct * width / 100 ))
       bar=$(printf '%*s' "$filled" '' | tr ' ' '#')
-      printf '\r  %-*s %3d%%' "$width" "$bar" "$pct" >&2
+      # cumulative average speed; each loop tick ≈ 0.2s (sleep below)
+      speed=$(fmt_mb $(( size * 5 / iter )))
+      printf '\r  %-*s %3d%%  %s/%s MB  %6s MB/s' "$width" "$bar" "$pct" "$(fmt_mb "$size")" "$total_mb" "$speed" >&2
       sleep 0.2
     done
     wait "$pid" || rc=$?
     trap - INT TERM
     if [ "$rc" -ne 0 ]; then printf '\n' >&2; return "$rc"; fi
     bar=$(printf '%*s' "$width" '' | tr ' ' '#')
-    printf '\r  %s 100%%\n' "$bar" >&2
+    [ "$iter" -gt 0 ] || iter=1
+    printf '\r  %s 100%%  %s/%s MB  %6s MB/s\n' "$bar" "$total_mb" "$total_mb" "$(fmt_mb $(( total * 5 / iter )))" >&2
   else
     fetch_quiet "$final" "$out"
   fi
+}
+
+fmt_mb() { # $1=bytes → MB with one decimal (integer math, bash 3.2 safe)
+  local tenths=$(( $1 * 10 / 1048576 ))
+  echo "$(( tenths / 10 )).$(( tenths % 10 ))"
 }
 
 fetch_quiet() { # $1=url $2=out — plain fetch, errors still reported

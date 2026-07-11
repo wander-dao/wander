@@ -68,6 +68,7 @@ function Download-WithBar([string]$Url, [string]$Out) {
     try {
       $buf = New-Object byte[] 65536
       $done = 0; $width = 40; $lastPct = -1
+      $sw = [Diagnostics.Stopwatch]::StartNew()
       while (($n = $in.Read($buf, 0, $buf.Length)) -gt 0) {
         $fs.Write($buf, 0, $n); $done += $n
         if ($total -gt 0) {
@@ -76,7 +77,8 @@ function Download-WithBar([string]$Url, [string]$Out) {
             $lastPct = $pct
             $filled = [int]($pct * $width / 100)
             $bar = ('#' * $filled).PadRight($width)
-            Write-Host -NoNewline ("`r  $bar {0,3}%" -f $pct)
+            $secs = [math]::Max($sw.Elapsed.TotalSeconds, 0.1)
+            Write-Host -NoNewline ("`r  $bar {0,3}%  {1:N1}/{2:N1} MB  {3,6:N1} MB/s" -f $pct, ($done / 1MB), ($total / 1MB), ($done / 1MB / $secs))
           }
         }
       }
