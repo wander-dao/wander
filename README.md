@@ -7,7 +7,7 @@
 **wander** 是一個**本機**的 Claude Code 用量工具:你的 token 不再是冰冷的數字,而是**靈氣**、**修為**、**境界**、**靈石**。
 
 - **不調用 API、不上傳任何資料** — 所有計算 100% 在你的機器上
-- **macOS**(Apple Silicon / Intel)+ **Windows x64**(實驗性)
+- **macOS**(Apple Silicon / Intel)+ **Windows x64**
 - 需要已安裝 Claude Code(`~/.claude/projects/` 有 transcript)
 
 ![release](https://img.shields.io/github/v/release/wander-dao/wander?label=release&color=3d6b6a) ![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20x64-b03a2a) ![license](https://img.shields.io/badge/license-PolyForm%20Strict%201.0.0-8a7a4f)
@@ -34,7 +34,7 @@ curl -fsSL https://raw.githubusercontent.com/wander-dao/wander/main/install.sh |
 curl -fsSL https://raw.githubusercontent.com/wander-dao/wander/main/install.sh | bash -s -- --no-statusline
 ```
 
-**Windows x64(實驗性)** — PowerShell 一行(下載、入 PATH、接線 statusline):
+**Windows x64** — PowerShell 一行(下載、入 PATH、接線 statusline):
 
 ```powershell
 irm https://raw.githubusercontent.com/wander-dao/wander/main/install.ps1 | iex
@@ -134,7 +134,7 @@ curl -fsSL https://raw.githubusercontent.com/wander-dao/wander/main/install.sh |
 **wander** is a **local-only** Claude Code usage tool: your tokens are no longer cold numbers, but **靈氣 (Qi)**, **修為 (Cultivation)**, **境界 (Realms)** and **靈石 (Spirit Stones)**.
 
 - **No API calls, nothing uploaded** — 100% of the computation happens on your machine
-- **macOS** (Apple Silicon / Intel) + **Windows x64** (experimental)
+- **macOS** (Apple Silicon / Intel) + **Windows x64**
 - Requires Claude Code installed, with transcripts under `~/.claude/projects/`
 
 ![Claude Code statusline](assets/readme/statusline.png)
@@ -159,7 +159,7 @@ Run `wander stats` once to build your record; open Claude Code and the status ba
 curl -fsSL https://raw.githubusercontent.com/wander-dao/wander/main/install.sh | bash -s -- --no-statusline
 ```
 
-**Windows x64 (experimental)** — one PowerShell line (downloads, adds to PATH, wires the statusline):
+**Windows x64** — one PowerShell line (downloads, adds to PATH, wires the statusline):
 
 ```powershell
 irm https://raw.githubusercontent.com/wander-dao/wander/main/install.ps1 | iex
