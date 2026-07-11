@@ -249,10 +249,13 @@ download() { # $1=asset $2=output
   else
     url="https://github.com/$REPO/releases/download/$VERSION/$asset"
   fi
+  # silent download: --progress-bar redraws over itself on the release-asset
+  # 302 redirect (two responses, one line) and smears garbage on some terminals;
+  # the ▶ line above is the user feedback. -sS still surfaces real errors.
   if command -v curl >/dev/null 2>&1; then
-    curl -fL --progress-bar -o "$out" "$url"
+    curl -fsSL -o "$out" "$url"
   elif command -v wget >/dev/null 2>&1; then
-    wget -q --show-progress -O "$out" "$url"
+    wget -q -O "$out" "$url"
   else
     red "need curl or wget to download"; exit 1
   fi
