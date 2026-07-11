@@ -36,7 +36,16 @@ $Repo    = 'wander-dao/wander'
 $BinDir  = Join-Path $HOME '.local\bin'
 $Exe     = Join-Path $BinDir 'wander.exe'
 $Settings = Join-Path $HOME '.claude\settings.json'
-$StatuslineCmd = "$Exe statusline"
+# Claude Code executes statusLine through Git Bash even on Windows, where
+# backslashes in the command are eaten as escape characters (C:\Users -> C:Users,
+# fails silently). Windows APIs accept forward slashes, so wire those instead.
+$StatuslineCmd = "$($Exe -replace '\\', '/') statusline"
+
+# Matches both the current forward-slash form and the backslash form older
+# installers wrote, so cleanup / rewire recognises its own entry either way.
+function Is-WanderStatusline($cmd) {
+  ($null -ne $cmd) -and (($cmd -replace '\\', '/') -eq $StatuslineCmd)
+}
 
 function Say-Cyan($m)  { Write-Host $m -ForegroundColor Cyan }
 function Say-Green($m) { Write-Host $m -ForegroundColor Green }
@@ -118,7 +127,7 @@ if ($Uninstall) {
     $obj = Read-SettingsObject
     if ($null -eq $obj) { Say-Gray "no $Settings - nothing to clean" }
     elseif (-not $obj.PSObject.Properties['statusLine']) { Say-Gray "settings.json has no statusLine - already clean" }
-    elseif ($obj.statusLine.command -ne $StatuslineCmd) {
+    elseif (-not (Is-WanderStatusline $obj.statusLine.command)) {
       Say-Red "statusLine is not wander's:"; Say-Red "  $($obj.statusLine.command)"; Say-Gray "leaving it untouched."
     } else {
       $obj.PSObject.Properties.Remove('statusLine')
@@ -215,7 +224,10 @@ if (-not $NoStatusline) {
     Say-Gray "settings.json already wired to wander statusline (no change)"
   } else {
     $go = $true
-    if ($existing) {
+    if ($existing -and (Is-WanderStatusline $existing)) {
+      # our own entry in the old backslash form — normalise silently
+      Say-Gray "rewriting statusLine path with forward slashes (Git Bash compat)"
+    } elseif ($existing) {
       Say-Red "settings.json already has a statusLine.command:"
       Say-Red "  $existing"
       $ans = Read-Host "Overwrite with 'wander.exe statusline'? [y/N]"
