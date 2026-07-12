@@ -27,9 +27,12 @@
 | `--realm` | Realm details |
 | `--projects` | Across caves |
 | `--oracle` | Today's oracle — authentic classics only |
+| `--essence` | 真元 (new compute) vs 藏氣 (re-reading the existing), per period and per cave |
 | `--json` | Machine-readable, read-only |
 
 Modifiers: `--refresh` forces a rescan; `--cwd <path>` picks the cave.
+
+> 真元 roughly equals the token total Claude Code's `/stats` shows; 靈氣 also counts 藏氣 (re-read context), so it runs tens of times larger — the two measure different things, not an error.
 
 ## Settings
 
