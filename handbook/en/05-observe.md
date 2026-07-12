@@ -52,6 +52,9 @@ One promise: **your data never leaves your machine.** No API calls, no uploads, 
 **Q:** Multiple machines?
 **A:** Each cultivates alone; no merging today.
 
+**Q:** How far back do the annals reach? Do they last?
+**A:** The source is Claude Code's transcripts (`.jsonl` under `~/.claude/projects/`). Claude Code deletes transcripts older than `cleanupPeriodDays` (default 30); but wander records each into its **permanent annals** *before* they are cleaned, so once ingested a session survives even after its transcript is gone — that is what the annals are for. The floor is the day you first ran wander; transcripts already deleted before then cannot be recovered. To keep more, set `cleanupPeriodDays` in `~/.claude/settings.json` (days, minimum 1; larger keeps transcripts longer), giving a deeper source if the annals are ever rebuilt — but transcripts accumulate on disk, so weigh it.
+
 **Q:** Can I delete the cache?
 **A:** Any time; it rebuilds. Only the permanent layer cannot be remade.
 
