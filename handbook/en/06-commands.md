@@ -28,6 +28,7 @@
 | `--projects` | Across caves |
 | `--oracle` | Today's oracle — authentic classics only |
 | `--essence` | 真元 (new compute) vs 藏氣 (re-reading the existing), per period and per cave |
+| `--models` | Per-model usage and 薪火 (fable / opus / custom each on its own row, by 薪火) |
 | `--json` | Machine-readable, read-only |
 
 Modifiers: `--refresh` forces a rescan; `--cwd <path>` picks the cave.
@@ -44,6 +45,7 @@ Modifiers: `--refresh` forces a rescan; `--cwd <path>` picks the cave.
 | `wander config set skill.<name>.alias "name"` | Rename an art |
 | `wander config set mcp.<server>.alias "name"` | Rename a whole 靈像 |
 | `wander config set autoMode <off\|cultivate\|compress>` | Pool-full law (see [II](02-qi-sea.md)) |
+| `wander config prices` | Show effective Kindling prices: built-in families + your overrides |
 | `wander config set price.<model> <in>/<out>[/<write>/<read>]` | Custom model pricing (USD / 1M tokens) |
 | `wander config set price.default <in>/<out>` | Fallback for unknown models |
 | `wander config set price.<model> <in>/<out> --from YYYY-MM-DD` | Dated segments, effective that day |
