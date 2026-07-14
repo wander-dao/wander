@@ -28,10 +28,11 @@
 | `--projects` | Across caves |
 | `--oracle` | Today's oracle — authentic classics only |
 | `--essence` | 真元 (new compute) vs 藏氣 (re-reading the existing), per period and per cave |
-| `--models` | Per-model usage and 薪火 (fable / opus / custom each on its own row, by 薪火) |
+| `--models` | Per-model usage and 薪火 (fable / opus / custom each on its own row, by 薪火; all-time by default) |
+| `--share` | Share mode: caves, external artifacts and custom arts all get fictional cultivation names (丹霞, 漱石…) — no real paths or names, screenshot-safe. Stacks with any view |
 | `--json` | Machine-readable, read-only |
 
-Modifiers: `--refresh` forces a rescan; `--cwd <path>` picks the cave.
+Modifiers: `--refresh` forces a rescan; `--cwd <path>` picks the cave; `-g`/`--global` for all caves, `-f`/`--focus` for the current cave (apply to `--models`/`--tools`/`--skills`; `--models` is all-time by default, `--tools`/`--skills` focus by default).
 
 > 真元 roughly equals the token total Claude Code's `/stats` shows; 靈氣 also counts 藏氣 (re-read context), so it runs tens of times larger — the two measure different things, not an error.
 
@@ -50,9 +51,18 @@ Modifiers: `--refresh` forces a rescan; `--cwd <path>` picks the cave.
 | `wander config set price.default <in>/<out>` | Fallback for unknown models |
 | `wander config set price.<model> <in>/<out> --from YYYY-MM-DD` | Dated segments, effective that day |
 | `wander config get <key>` | Read one key |
+| `wander config unset <key>` | Remove one setting (every key `set` supports; `price.<model> --from <date>` removes a single segment) |
 | `wander config reset` | Restore defaults; the annals untouched |
 
 Prices apply at once: Kindling recomputes at read time; history itself is never rewritten. Omitted cache prices derive at list ratios — write 1.25× input, read 0.1×.
+
+## Completions
+
+Shell completions (zsh / bash / fish):
+
+```bash
+source <(wander completions zsh)    # or persist it in ~/.zshrc
+```
 
 ## Update
 

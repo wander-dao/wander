@@ -84,7 +84,7 @@ wander --help       # 所有指令
 ## 隱私
 
 - **不調用任何 API**(包括 Anthropic admin)
-- **不上傳、無遙測** — 所有計算 100% 本機
+- **不上傳、不追蹤** — 所有計算都在你電腦本機完成
 - 結果只落在本機三層資料(永久 archive / 可重建 cache / 你的 config)— **任何內容都不會離開你的電腦**
 - 資料佈局與備份 → [手冊卷五](handbook/05-觀測.md)
 
@@ -93,7 +93,7 @@ wander --help       # 所有指令
 ## 更新與解除安裝
 
 ```bash
-wander upgrade      # 手動升級:只連 GitHub 取 binary,SHA256 校驗,零自動零遙測
+wander upgrade      # 手動升級:只連 GitHub 取新版並核對無誤,不會自動更新、不回報任何東西
 wander uninstall    # 互動式;預設保留修行紀錄與設定,再裝可續
 ```
 
