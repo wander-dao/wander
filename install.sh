@@ -243,6 +243,22 @@ EOF
 }
 
 # ── download helper ────────────────────────────────────────
+pin_latest_version() {
+  # Resolve "latest" to a concrete tag ONCE, so the tarball and SHA256SUMS.txt
+  # always come from the SAME release — two independent latest/ hits could
+  # straddle a release published mid-install and abort on a spurious checksum
+  # mismatch. Best-effort: if the redirect can't be read, keep "latest".
+  [[ "$VERSION" == "latest" ]] || return 0
+  command -v curl >/dev/null 2>&1 || return 0
+  local final tag
+  final=$(curl -fsSL -o /dev/null -w '%{url_effective}' "https://github.com/$REPO/releases/latest" 2>/dev/null) || return 0
+  tag="${final##*/tag/}"
+  if [ -n "$tag" ] && [ "$tag" != "$final" ]; then
+    VERSION="$tag"
+    gray "release: $VERSION"
+  fi
+}
+
 asset_url() { # $1=asset → release asset URL on stdout
   # GitHub asset URL shapes differ: latest/download/<asset> vs download/<tag>/<asset>
   if [[ "$VERSION" == "latest" ]]; then
@@ -370,6 +386,7 @@ mkdir -p "$BIN_DIR"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
+pin_latest_version
 cyan "▶ downloading wander ($TARGET)…"
 download "wander-$TARGET.tar.gz" "$tmp/wander.tar.gz"
 # verify against the release checksum list before touching anything (same

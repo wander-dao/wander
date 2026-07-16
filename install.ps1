@@ -39,12 +39,17 @@ $Settings = Join-Path $HOME '.claude\settings.json'
 # Claude Code executes statusLine through Git Bash even on Windows, where
 # backslashes in the command are eaten as escape characters (C:\Users -> C:Users,
 # fails silently). Windows APIs accept forward slashes, so wire those instead.
-$StatuslineCmd = "$($Exe -replace '\\', '/') statusline"
+# The exe path is QUOTED — Windows profile paths regularly contain spaces
+# ("C:\Users\Foo Bar\...") and an unquoted command breaks word-splitting.
+$StatuslineCmd = "`"$($Exe -replace '\\', '/')`" statusline"
 
-# Matches both the current forward-slash form and the backslash form older
-# installers wrote, so cleanup / rewire recognises its own entry either way.
+# Matches every form we've ever written: quoted / unquoted, forward / backslash,
+# so cleanup / rewire recognises its own entry either way.
 function Is-WanderStatusline($cmd) {
-  ($null -ne $cmd) -and (($cmd -replace '\\', '/') -eq $StatuslineCmd)
+  if ($null -eq $cmd) { return $false }
+  $norm = ($cmd -replace '\\', '/') -replace '"', ''
+  $mine = $StatuslineCmd -replace '"', ''
+  return $norm -eq $mine
 }
 
 function Say-Cyan($m)  { Write-Host $m -ForegroundColor Cyan }
@@ -110,9 +115,26 @@ function Write-SettingsObject($obj) {
 
 # ============================== uninstall ==============================
 if ($Uninstall) {
-  foreach ($f in @($Exe, (Join-Path $BinDir 'wander.old.exe'))) {
-    if (Test-Path $f) { Remove-Item $f -Force; Say-Green "removed $f" }
-    else { Say-Gray "not present: $f" }
+  # .old first, so a locked (running) wander.exe can be renamed onto that name.
+  $OldExe = Join-Path $BinDir 'wander.old.exe'
+  foreach ($f in @($OldExe, $Exe)) {
+    if (-not (Test-Path $f)) { Say-Gray "not present: $f"; continue }
+    try {
+      Remove-Item $f -Force -ErrorAction Stop
+      Say-Green "removed $f"
+    } catch {
+      # The statusline re-runs wander.exe every few seconds — the running image
+      # can't be deleted, but renaming is allowed. Park it as .old; it's
+      # deletable once no wander process is running.
+      if ($f -eq $Exe) {
+        try {
+          Move-Item $f $OldExe -Force -ErrorAction Stop
+          Say-Gray "wander.exe is running - renamed to $OldExe (delete it later)"
+        } catch { Say-Red "could not remove $f : $($_.Exception.Message)" }
+      } else {
+        Say-Red "could not remove $f : $($_.Exception.Message)"
+      }
+    }
   }
   $cache = Join-Path $HOME '.cache\wander'
   if (Test-Path $cache) { Remove-Item $cache -Recurse -Force; Say-Green "removed $cache" }
