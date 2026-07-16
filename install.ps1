@@ -271,7 +271,9 @@ if (-not $NoStatusline) {
   }
 }
 
-Say-Green "Done."
+# Show the wander logo (also confirms the freshly-installed binary runs).
+Write-Host ""
+try { & $Exe version } catch { Say-Green "installed - run: wander version" }
 if (-not $NoStatusline) { Write-Host "  Open Claude Code - your status bar now shows your practice." }
 Write-Host "  Try:"
 Write-Host "     wander stats          # panorama"

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # wander installer — downloads the prebuilt binary from GitHub Release.
-# Per-user (no sudo). macOS (arm64 / x64). Windows x64: manual steps in the README.
+# Per-user (no sudo). macOS (arm64 / x64). Windows x64: use install.ps1 (see the README).
 #
 # One binary does both the CLI and `wander statusline`. By default it installs
 # `wander` and wires the Claude Code statusline; --no-statusline skips wiring.
@@ -31,7 +31,7 @@ gray()  { printf "\033[90m%s\033[0m\n" "$*"; }
 usage() {
   cat <<'EOF'
 wander installer — downloads the prebuilt binary from GitHub Release.
-Per-user (no sudo). macOS (arm64 / x64). Windows x64: manual steps in the README.
+Per-user (no sudo). macOS (arm64 / x64). Windows x64: use install.ps1 (see the README).
 
 One binary does both the CLI and the statusline.
 
@@ -69,7 +69,7 @@ done
 OS="$(uname -s)"
 if [[ "$OS" != "Darwin" ]]; then
   red "This installer supports macOS only. Detected: $OS"
-  red "Windows x64 (experimental): manual install steps in the README. Linux is not supported."
+  red "Windows x64 (experimental): use install.ps1 (see the README). Linux is not supported."
   exit 1
 fi
 ARCH="$(uname -m)"
@@ -428,8 +428,9 @@ if (( WIRE_STATUSLINE )); then
 fi
 
 # ── done ───────────────────────────────────────────────────
+# Show the wander logo (also confirms the freshly-installed binary runs).
 echo
-green "✔ Done."
+"$BIN_DIR/wander" version 2>/dev/null || green "✔ installed — run: wander version"
 if (( WIRE_STATUSLINE )); then
   echo "   Open Claude Code — your status bar now shows your 修行 state."
 fi
