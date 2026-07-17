@@ -69,7 +69,7 @@ done
 OS="$(uname -s)"
 if [[ "$OS" != "Darwin" ]]; then
   red "This installer supports macOS only. Detected: $OS"
-  red "Windows x64 (experimental): use install.ps1 (see the README). Linux is not supported."
+  red "Windows x64: use install.ps1 (see the README). Linux is not supported."
   exit 1
 fi
 ARCH="$(uname -m)"

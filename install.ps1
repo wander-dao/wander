@@ -1,5 +1,5 @@
 <#
-wander installer (Windows x64, experimental) — downloads the prebuilt binary
+wander installer (Windows x64) — downloads the prebuilt binary
 from GitHub Release, installs to ~\.local\bin, adds it to your user PATH,
 and wires the Claude Code statusline. One binary does both the CLI and
 `wander statusline`.
