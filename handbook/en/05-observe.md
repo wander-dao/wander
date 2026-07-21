@@ -2,21 +2,25 @@
 
 🌐 [中文](../05-觀測.md)
 
-## The statusline
+## The statusline (two lines)
 
 ```
-🌤 【築基期 二層 42%】 · 氣海 3.2M/59.8M · 靈石 2上40中 · 靈力 76% · 1時20分後回復 · wander洞府 ~$123
+wander洞府 ~$123 · 靈力 76% · 1時20分後回復 · 鼎 Opus 4.8[1M] 34%
+🌤 【築基期 二層 42%】 · 氣海 3.2M/59.8M · 靈石 2上40中
 ```
+
+Line 1 is **now** — your cave and its Kindling, the 靈力 quota, and 鼎 (the model this conversation runs on and its context usage); line 2 is your **path** — 時辰, realm, 氣海, 靈石.
 
 | Field | Meaning |
 |-------|---------|
-| leading emoji | Rotates with the twelve 時辰 (子 🌙 → 亥 🌠) |
+| 洞府 ~$X | Where you stand, and its lifetime Kindling (approximate) |
+| 靈力 X% | 5-hour quota left; ⚠ / ✕ with recovery time when low |
+| 鼎 M[size] % | The model this conversation runs on, its context window and the fraction used; the figure comes straight from Claude Code, hidden when unavailable |
+| leading emoji | Leads line 2; rotates with the twelve 時辰 (子 🌙 → 亥 🌠) |
 | 【realm · layer · %】 | Realm and in-layer progress, driven by Cultivation |
 | 氣海 X/Y | Pool / cap — a **projection**; new Qi counted before it lands |
 | ⚠ 寒月+X | What would scatter if settled now; refine or compress soon |
 | 靈石 | Stones in the bag, compact notation (count + grade) |
-| 靈力 X% | 5-hour quota left; ⚠ / ✕ with recovery time when low |
-| 洞府 ~$X | Where you stand, and its lifetime Kindling (approximate) |
 
 First use shows 【未入門】 for a moment, then it lights up on its own — the record builds itself. The status bar redraws every five seconds, so it stays current even while idle.
 
