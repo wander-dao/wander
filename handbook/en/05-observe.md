@@ -5,22 +5,35 @@
 ## The statusline (two lines)
 
 ```
-wander洞府 ~$123 · 靈力 76% · 1時20分後回復 · 鼎 Opus 4.8[1M] 34%
+wander洞府 ~$123 · 靈力 76% · 1時20分後回復 · 鼎 Opus 4.8 max [1M] 34%
 🌤 【築基期 二層 42%】 · 氣海 3.2M/59.8M · 靈石 2上40中
 ```
 
-Line 1 is **now** — your cave and its Kindling, the 靈力 quota, and 鼎 (the model this conversation runs on and its context usage); line 2 is your **path** — 時辰, realm, 氣海, 靈石.
+Line 1 is **now** — your cave and its Kindling, the 靈力 quota, and 鼎 (the model this conversation runs on, its reasoning effort, and context usage); line 2 is your **path** — 時辰, realm, 氣海, 靈石.
 
 | Field | Meaning |
 |-------|---------|
 | 洞府 ~$X | Where you stand, and its lifetime Kindling (approximate) |
 | 靈力 X% | 5-hour quota left; ⚠ / ✕ with recovery time when low |
-| 鼎 M[size] % | The model this conversation runs on, its context window and the fraction used; the figure comes straight from Claude Code, hidden when unavailable |
+| 鼎 M effort [size] % | The model, its reasoning effort (low…max, shown as-is), context window, and fraction used; comes straight from Claude Code, hidden when unavailable |
 | leading emoji | Leads line 2; rotates with the twelve 時辰 (子 🌙 → 亥 🌠) |
 | 【realm · layer · %】 | Realm and in-layer progress, driven by Cultivation |
 | 氣海 X/Y | Pool / cap — a **projection**; new Qi counted before it lands |
 | ⚠ 寒月+X | What would scatter if settled now; refine or compress soon |
 | 靈石 | Stones in the bag, compact notation (count + grade) |
+
+### Optional segments (off by default)
+
+Every segment can be toggled; these four are **off by default** and appear only once enabled (and only with data):
+
+| Segment | key | Shows | Meaning |
+|---------|-----|-------|---------|
+| repo | `repo` | wander-dao/wander | The 洞府's git repo, to the left of 洞府 (shown as-is) |
+| weekly 靈力 | `manaWeek` | 週 64% · 3天5時後回復 | 7-day quota left and its reset countdown |
+| 疾行 | `haste` | ⚡疾行 | Shown when fast mode is on |
+| 淬煉 | `temper` | 淬煉 +230/-45 | Lines changed this turn (added / removed) |
+
+Toggle: `wander config set statusline.<seg> on|off` (names are case-insensitive); `wander config list` shows the current state. e.g. `wander config set statusline.temper on`.
 
 First use shows 【未入門】 for a moment, then it lights up on its own — the record builds itself. The status bar redraws every five seconds, so it stays current even while idle.
 
