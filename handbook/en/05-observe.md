@@ -35,6 +35,31 @@ Every segment can be toggled; these four are **off by default** and appear only 
 
 Toggle: `wander config set statusline.<seg> on|off` (names are case-insensitive); `wander config list` shows the current state. e.g. `wander config set statusline.temper on`.
 
+## The subagent panel (a second, separate line)
+
+Claude Code gives each running subagent its own row in the agent panel below the prompt — a **different line** from the statusline above. Its default row is `name · description · tokens`, with **no model**: to see which model a subagent runs, you have to scroll back up the conversation tree.
+
+Hand that row to wander too (**optional** — leaving it unset changes nothing):
+
+```jsonc
+// settings.json, alongside statusLine
+"subagentStatusLine": {
+  "type": "command",
+  "command": "/path/to/wander subagent-statusline"
+}
+```
+
+The row becomes:
+
+```
+Enter key test · haiku-4-5 max · ↓ 22.4k tokens
+     name      ·  model effort ·   tokens
+```
+
+Just as short as the default — the description (which usually repeats the name) is swapped for the **model and its reasoning effort**. A long name is truncated to the panel width (CJK counted by cell, never cut mid-character); model and tokens always survive.
+
+This panel is where you *operate* — select, `Enter` to open, `x` to stop — so it stays plain rather than themed, and every panel control keeps working.
+
 First use shows 【未入門】 for a moment, then it lights up on its own — the record builds itself. The status bar redraws every five seconds, so it stays current even while idle.
 
 The statusline is a **pure cache reader — it never scans, never writes**. Any command keeps it fresh. Projection is idempotent; leave it on without a thought.
